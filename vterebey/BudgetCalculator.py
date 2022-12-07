@@ -21,11 +21,8 @@ default_categories = {1:"Grocery store",2:"Clothing",3:"Entertainment",4:"Cafe",
 with open("values.csv", "w",newline='') as file:
     writer = csv.writer(file)
     writer.writerow(fieldnames)
-with open("groupby.csv", "w",newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(fieldnames)    
-
-
+ 
+ 
 amounts = []
 exist_categories = set()
 def add_category(category,amount):
@@ -43,7 +40,7 @@ def get_category(category):
         print(*fieldnames,sep=',')
         for row in reader:
             if row['Category'] == category:
-                print(f"{row['Category']},{row['Date']},{row['Amount']} BYN")
+                print(f"{row['Category']},{row['Date']},{row['Amount']}")
         print() 
 
 
@@ -54,7 +51,7 @@ def get_month(month):
         for row in reader:
             check_month = row['Date']
             if check_month[:7] == month:
-                print(f"{row['Category']},{row['Date']},{row['Amount']} BYN")
+                print(f"{row['Category']},{row['Date']},{row['Amount']}")
         print() 
 
 
@@ -65,10 +62,7 @@ def get_category_month(category,month):
         for row in reader:
             check_month = row['Date']
             if (check_month[:7] == month and row['Category'] == category):
-                print(f"{row['Category']},{row['Date']},{row['Amount']} BYN")
-                with open ("groupby.csv","a",newline="") as file:
-                    writer = csv.writer(file)
-                    writer.writerow(category)
+                print(f"{row['Category']},{row['Date']},{row['Amount']}")
         print()
 
 
