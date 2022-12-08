@@ -1,11 +1,11 @@
 ''''
-En: 'Budget Calculator' program to track expenses by category and date.
+'Budget Calculator' program to track expenses by category and date.
 To use you need to run the program. Next you need to choose what you are going to do, you can:
 1. Enter or select an expense category and cost
 2. View spending statistics on a pie chart
 3. Display expenses by category (you can choose the suggested one or enter it yourself)
 4. Display expenses by month (you must enter the year and month in the format: YYYY-MM)
-5 Display expenses by category and month at the same time (see above how the category and month are set)
+5. Display expenses by category and month at the same time (see above how the category and month are set)
 All expenses are recorded in the file 'values.csv' The file contains the category,date and cost
 '''
 
@@ -23,14 +23,12 @@ with open("values.csv", "w",newline='') as file:
     writer.writerow(fieldnames)
  
  
-amounts = []
-exist_categories = set()
+
 def add_category(category,amount):
     if category not in categories:
         categories[category] = amount
     else:
         categories[category] += amount
-    exist_categories.add(category)
     return categories 
 
 
@@ -81,7 +79,7 @@ class Budget:
     def statistics():
         amounts = list(categories.values())
         fig1, ax1 = plt.subplots()
-        ax1.pie(amounts, labels=list(exist_categories), autopct='%1.1f%%',
+        ax1.pie(amounts, labels=list(categories.keys()), autopct='%1.1f%%',
         shadow=False, startangle=90)
         ax1.axis('equal')
         ax1.set_title("Statistics")
@@ -118,17 +116,25 @@ def welcome_menu():
 
 
 def options_menu():
-    input_choice = input("Enter 'select' to select a category or 'enter' to enter yourself\n")
-    if (input_choice == "select"):
-        print('''
+    input_valid = False
+    while (not input_valid):
+        try:
+            input_choice = input("Enter 'select' to select a category or 'enter' to enter yourself\n")
+            if (input_choice == "select"):
+                input_valid = True
+                print('''
 1. Grocery store
 2. Clothing
 3. Entertainment
 4. Cafe
 5. Store
 6. Pharmacy\n''')
-    else:
-        print()
+            elif (input_choice == "enter"):
+                input_valid = True
+            else:
+                print("Only 'select' or 'enter',repeat input\n")    
+        except:
+            print("Only 'select' or 'enter',repeat input\n")
     return input_choice
 
 
@@ -140,12 +146,12 @@ def enter_category():
     user_choice = options_menu()
     user_category = ""
     if (user_choice == "select"):
-        user_choice = int(input("Enter Number: "))
+        user_choice = select_valid()
         user_category = default_categories[user_choice]
     elif user_choice == "enter":
-        user_category = input("Enter Category: ")
+        user_category = enter_valid()
     user_date = date.today()
-    user_amount = int(input("Enter Amount: "))
+    user_amount = amount_valid()
     print()
     myBudget.add(user_category,user_date,user_amount)
     return None
@@ -154,17 +160,17 @@ def by_category():
     user_choice = options_menu()
     category_name = ""
     if (user_choice == "select"):
-        user_choice = int(input("Enter Number: "))
+        user_choice = select_valid()
         category_name = default_categories[user_choice]
     elif user_choice == "enter":
-        category_name = (input("Enter the category: "))
+        category_name = enter_valid()
     print()
     myBudget.group_category(category_name)
     return None
 
 
 def by_month():
-    month = input("Enter the month: \n")
+    month = input("Enter the month(YYYY-MM): \n")
     myBudget.group_month(month)
     return None
 
@@ -172,21 +178,74 @@ def by_category_month():
     user_choice = options_menu()
     user_category = ""
     if (user_choice == "select"):
-        user_choice = int(input("Enter Number: "))
+        user_choice = select_valid()
         user_category = default_categories[user_choice]
     elif user_choice == "enter":
-        user_category = input("Enter Category: ")
-    month_name = input("Enter the month: ")
+        user_category = enter_valid()
+    month_name = input("Enter the month(YYYY-MM): ")
     print()
     myBudget.group_category_month(user_category,month_name)
     return None
 
+def input_valid():
+    input_valid = False
+    while (not input_valid):
+        try:
+            user_choice = int(input('> '))
+            input_valid = True
+        except:
+            print("Only integers ale allowed, repeat input\n")
+            input_valid = False
+    return user_choice
+
+
+def select_valid():
+    input_valid = False
+    while (not input_valid):
+        try:
+            user_select = int(input('Enter number of category:'))
+            if (user_select >= 1 and user_select <= 6):
+                input_valid = True
+            else:
+                print("Only integers from 1 to 6, repeat input\n")
+        except:
+            print("Only integers from 1 to 6, repeat input\n")
+            input_valid = False
+    return user_select
+
+
+def enter_valid():
+    input_valid = False
+    while (not input_valid):
+        try:
+            user_category = (input('Enter Category: '))
+            if (user_category.isalpha()):
+                input_valid = True   
+            else:
+                print("Only letters, repeat input\n")
+        except:    
+            input_valid = False
+    return user_category
+
+
+def amount_valid():
+    input_valid = False
+    while (not input_valid):
+        try:
+            user_amount = int(input ("Enter Amount: "))
+            if (user_amount > 0):
+                input_valid = True
+            else: 
+                print("Only integers greater than 0. Come on!\n")
+        except ValueError:
+            print("Only integers greater than 0. Come on!\n")
+    return user_amount
 
 if __name__ == '__main__':
     while True:
         welcome_menu()
         myBudget = Budget()
-        choice = int(input('> '))
+        choice = input_valid()
         print()
         if choice == 1:
             enter_category()
