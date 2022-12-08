@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 from datetime import date
 
 
+"""dict 'categories' to store categories and amount"""
 fieldnames = ['Category', 'Date', 'Amount']
 categories = {}
 default_categories = {1:"Grocery store",2:"Clothing",3:"Entertainment",4:"Cafe",5:"Store",6:"Pharmacy"}
@@ -23,7 +24,8 @@ with open("values.csv", "w",newline='') as file:
     writer.writerow(fieldnames)
  
  
-
+"""adds category and it's amount to the dictionary
+for displaying statistics"""
 def add_category(category,amount):
     if category not in categories:
         categories[category] = amount
@@ -32,6 +34,7 @@ def add_category(category,amount):
     return categories 
 
 
+"""displays expenses depending on the category"""
 def get_category(category):
     with open("values.csv","r",newline= "") as csvfile:
         reader = csv.DictReader(csvfile,delimiter=",")
@@ -42,6 +45,7 @@ def get_category(category):
         print() 
 
 
+"""displays expenses depending on the month"""
 def get_month(month): 
     with open("values.csv","r",newline= "") as csvfile:
         reader = csv.DictReader(csvfile,delimiter=",")
@@ -53,6 +57,7 @@ def get_month(month):
         print() 
 
 
+"""displays expenses depending on the category and month"""
 def get_category_month(category,month): 
     with open("values.csv","r",newline= "") as csvfile:
         reader = csv.DictReader(csvfile,delimiter=",")
@@ -66,6 +71,8 @@ def get_category_month(category,month):
 
 class Budget: 
 
+
+    """enters expenses to a file 'values.csv' """
     @staticmethod
     def add(category,date,amount):
         add_category(category,amount)
@@ -75,6 +82,7 @@ class Budget:
         return None
 
 
+    """dispay expenses in the form of a chart"""
     @staticmethod
     def statistics():
         amounts = list(categories.values())
@@ -87,24 +95,28 @@ class Budget:
         return None
 
 
+    """"group expenses by category"""
     @staticmethod
     def group_category(category):
         get_category(category)
         return None
     
 
+    """"group expenses by month"""
     @staticmethod
     def group_month(month):
         get_month(month)
         return None
 
 
+    """"group expenses by category and month"""
     @staticmethod    
     def group_category_month(category,month):
         get_category_month(category,month)
         return None
 
 
+""""displays a menu"""
 def welcome_menu():
     print('''What would like to do:
 1. Make an entry
@@ -115,6 +127,7 @@ def welcome_menu():
 6. Exit''')
 
 
+""""gives the choice to choose a category by itself or from the default categories"""
 def options_menu():
     input_valid = False
     while (not input_valid):
@@ -138,10 +151,13 @@ def options_menu():
     return input_choice
 
 
+""""wait for input to continue"""
 def stop_button():
     input("Enter to continue \n")
     return None
 
+
+""""enter category, amount and month """
 def enter_category():
     user_choice = options_menu()
     user_category = ""
@@ -156,6 +172,8 @@ def enter_category():
     myBudget.add(user_category,user_date,user_amount)
     return None
 
+
+""""group expenses by category"""
 def by_category():
     user_choice = options_menu()
     category_name = ""
@@ -169,11 +187,14 @@ def by_category():
     return None
 
 
+""""group expenses by month"""
 def by_month():
     month = input("Enter the month(YYYY-MM): \n")
     myBudget.group_month(month)
     return None
 
+
+""""group expenses by category and month"""
 def by_category_month():
     user_choice = options_menu()
     user_category = ""
@@ -187,6 +208,8 @@ def by_category_month():
     myBudget.group_category_month(user_category,month_name)
     return None
 
+
+""""validation of input menu data"""
 def input_valid():
     input_valid = False
     while (not input_valid):
@@ -199,6 +222,7 @@ def input_valid():
     return user_choice
 
 
+""""validation of the input category from default categories"""
 def select_valid():
     input_valid = False
     while (not input_valid):
@@ -214,6 +238,7 @@ def select_valid():
     return user_select
 
 
+""""validation of the input category"""
 def enter_valid():
     input_valid = False
     while (not input_valid):
@@ -228,6 +253,7 @@ def enter_valid():
     return user_category
 
 
+""""validation of the input amount"""
 def amount_valid():
     input_valid = False
     while (not input_valid):
@@ -241,6 +267,8 @@ def amount_valid():
             print("Only integers greater than 0. Come on!\n")
     return user_amount
 
+
+"""program start point"""
 if __name__ == '__main__':
     while True:
         welcome_menu()
