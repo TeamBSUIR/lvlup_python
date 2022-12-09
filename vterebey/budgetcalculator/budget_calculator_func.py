@@ -16,12 +16,16 @@ The file contains the category,date and cost
 
 
 import csv
-from datetime import date
+import re
+from datetime import datetime
 import matplotlib.pyplot as plt
 
 
-# dict 'categories' to store categories and amount
+# dict 'default_categories' to store categories
+# regular expressions for category validation
 fieldnames = ["Category", "Date", "Amount"]
+CAT_REGEX = "^[0-9]+$"
+cat_pattern = re.compile(CAT_REGEX)
 categories = {}
 default_categories = {
     1: "Grocery store",
@@ -36,9 +40,9 @@ with open("values.csv", "w", encoding="UTF-8", newline="") as file:
     writer.writerow(fieldnames)
 
 
-def add_category(category, amount):
+def add_cat(category, amount):
     """
-    adds category and it's amount to the dictionary
+    This function adds category and it's amount to the dictionary
     for displaying statistics
     """
     if category not in categories:
@@ -48,8 +52,8 @@ def add_category(category, amount):
     return categories
 
 
-def get_category(category):
-    """displays expenses depending on the category"""
+def get_expenses_by_cat(category):
+    """This fuction displays expenses depending on the category"""
     with open("values.csv", "r", encoding="UTF-8", newline="") as csvfile:
         reader = csv.DictReader(csvfile, delimiter=",")
         print(*fieldnames, sep=",")
@@ -59,26 +63,28 @@ def get_category(category):
         print()
 
 
-def get_month(month):
-    """displays expenses depending on the month"""
+def get_expenses_by_month(month):
+    """This function displays expenses depending on the month"""
     with open("values.csv", "r", encoding="UTF-8", newline="") as csvfile:
         reader = csv.DictReader(csvfile, delimiter=",")
         print(*fieldnames, sep=",")
         for row in reader:
-            check_month = row["Date"]
-            if check_month[:7] == month:
+            check_month = datetime.strptime(row["Date"], "%Y-%m-%d")
+            check_month = check_month.strftime("%Y-%m")
+            if check_month == month:
                 print(f"{row['Category']},{row['Date']},{row['Amount']}")
         print()
 
 
-def get_category_month(category, month):
-    """displays expenses depending on the category and month"""
+def get_epxenses_by_cat_month(category, month):
+    """This function displays expenses depending on the category and month"""
     with open("values.csv", "r", encoding="UTF-8", newline="") as csvfile:
         reader = csv.DictReader(csvfile, delimiter=",")
         print(*fieldnames, sep=",")
         for row in reader:
-            check_month = row["Date"]
-            if check_month[:7] == month and row["Category"] == category:
+            check_month = datetime.strptime(row["Date"], "%Y-%m-%d")
+            check_month = check_month.strftime("%Y-%m")
+            if check_month == month and row["Category"] == category:
                 print(f"{row['Category']},{row['Date']},{row['Amount']}")
         print()
 
@@ -88,9 +94,11 @@ class Budget:
     "A class to represent a budget"
 
     @staticmethod
-    def add(category, date_, amount):
-        """enters expenses to a file"""
-        add_category(category, amount)
+    def add_expense(category, date_, amount):
+        """This function enters expenses to a file"""
+        add_cat(category, amount)
+        if int(amount) == amount:
+            amount = int(amount)
         with open("values.csv", "a", encoding="UTF-8", newline="") as csvfile:
             writer_ = csv.writer(csvfile)
             writer_.writerow([category, date_, amount])
@@ -113,19 +121,20 @@ class Budget:
         plt.show()
 
     @staticmethod
-    def group_category(category):
+    def group_by_cat(category):
         """This function groups expenses by category"""
-        get_category(category)
+        get_expenses_by_cat(category)
 
     @staticmethod
-    def group_month(month):
+    def group_by_month():
         """This function groups expenses by month"""
-        get_month(month)
+        month = _month_valid()
+        get_expenses_by_month(month)
 
     @staticmethod
-    def group_category_month(category, month):
+    def group_by_cat_month(category, month):
         """This function groups expenses by category and month"""
-        get_category_month(category, month)
+        get_epxenses_by_cat_month(category, month)
 
 
 def welcome_menu():
@@ -177,7 +186,7 @@ def stop_button():
     input("Enter to continue \n")
 
 
-def enter_category():
+def enter_expense():
     """This function enters category, amount and month"""
     user_choice = options_menu()
     user_category = ""
@@ -186,32 +195,26 @@ def enter_category():
         user_category = default_categories[user_choice]
     elif user_choice == "enter":
         user_category = _enter_valid()
-    user_date = date.today()
+    user_date = _date_valid()
     user_amount = _amount_valid()
     print()
-    myBudget.add(user_category, user_date, user_amount)
+    myBudget.add_expense(user_category, user_date, user_amount)
 
 
-def by_category():
+def by_cat():
     """This function groups expenses by category"""
     user_choice = options_menu()
-    category_name = ""
+    user_cat = ""
     if user_choice == "select":
         user_choice = _select_valid()
-        category_name = default_categories[user_choice]
+        user_cat = default_categories[user_choice]
     elif user_choice == "enter":
-        category_name = _enter_valid()
+        user_cat = _enter_valid()
     print()
-    myBudget.group_category(category_name)
+    myBudget.group_by_cat(user_cat)
 
 
-def by_month():
-    """This function groups expenses by month"""
-    month = input("Enter the month(YYYY-MM): \n")
-    myBudget.group_month(month)
-
-
-def by_category_month():
+def by_cat_month():
     """This fucntion groups expenses by category and month"""
     user_choice = options_menu()
     user_category = ""
@@ -220,9 +223,9 @@ def by_category_month():
         user_category = default_categories[user_choice]
     elif user_choice == "enter":
         user_category = _enter_valid()
-    month_name = input("Enter the month(YYYY-MM): ")
+    month_name = _month_valid()
     print()
-    myBudget.group_category_month(user_category, month_name)
+    myBudget.group_by_cat_month(user_category, month_name)
 
 
 def _input_valid():
@@ -259,14 +262,15 @@ def _enter_valid():
     enter_valid = False
     while not enter_valid:
         try:
-            user_category = input("Enter Category: ")
-            if user_category.isalpha():
+            user_cat = input("Enter Category: ")
+            if cat_pattern.search(user_cat) is None:
                 enter_valid = True
             else:
-                print("Only letters, repeat input\n")
+                print("Repeat input\n")
         except ValueError:
+            print("Repeat input\n")
             enter_valid = False
-    return user_category
+    return user_cat
 
 
 def _amount_valid():
@@ -274,14 +278,44 @@ def _amount_valid():
     amount_valid = False
     while not amount_valid:
         try:
-            user_amount = int(input("Enter Amount: "))
+            user_amount = float(input("Enter Amount: "))
             if user_amount > 0:
                 amount_valid = True
             else:
-                print("Only integers greater than 0. Come on!\n")
+                print("Only numbers greater than 0. Come on!\n")
         except ValueError:
-            print("Only integers greater than 0. Come on!\n")
+            print("Only numbers greater than 0. Come on!\n")
     return user_amount
+
+
+def _month_valid():
+    """This function validates input category"""
+    enter_valid = False
+    while not enter_valid:
+        user_date = input("Enter Month(YYYY-MM): ")
+        try:
+            valid_date = datetime.strptime(user_date, "%Y-%m")
+            valid_date = valid_date.strftime("%Y-%m")
+            enter_valid = True
+        except ValueError:
+            print("Invalid date! Repeat input ")
+            enter_valid = False
+    return valid_date
+
+
+def _date_valid():
+    """This function validates input category"""
+    enter_valid = False
+    while not enter_valid:
+        user_date = input("Enter Date(YYYY-MM-DD): ")
+        try:
+            valid_date = datetime.strptime(user_date, "%Y-%m-%d")
+            valid_date = valid_date.date()
+            enter_valid = True
+        except ValueError:
+            print("Invalid date! Repeat input ")
+            enter_valid = False
+    return valid_date
 
 
 # program start point
@@ -292,15 +326,15 @@ if __name__ == "__main__":
         choice = _input_valid()
         print()
         if choice == 1:
-            enter_category()
+            enter_expense()
         elif choice == 2:
             myBudget.statistics()
         elif choice == 3:
-            by_category()
+            by_cat()
         elif choice == 4:
-            by_month()
+            myBudget.group_by_month()
         elif choice == 5:
-            by_category_month()
+            by_cat_month()
         elif choice == 6:
             break
         stop_button()
