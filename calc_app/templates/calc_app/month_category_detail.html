@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Month Statistics{% endblock title %}</title>
+</head>
+<body>
+{% block content %}
+    <link rel="stylesheet" href="{% static 'calc_app/css/month_category_style.css' %}">
+    <div class="container">
+        <h2>Total money sum for {{ month_name }}: {{ total_sum }}</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Cost</th>
+                <th>Date</th>
+            </tr>
+            </thead>
+            <tr>
+                {% for item in items %}
+                    <td>{{ item.cost }}</td>
+                    <td>{{ item.date }}</td>
+                    </tr>
+                {% endfor %}
+        </table>
+    </div>
+{% endblock content %}
+</body>
+</html>

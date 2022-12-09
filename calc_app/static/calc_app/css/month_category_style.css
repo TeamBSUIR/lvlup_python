@@ -1,0 +1,24 @@
+.container{
+	width: 50%;
+    display: flex;
+	padding: 60px 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px
+}
+
+table {
+	width: 60%;
+	border: 1px solid black;
+}
+th {
+	font-weight: bold;
+	padding: 10px;
+	background: #efefef;
+	border: 1px solid black;
+}
+td {
+	width: 100px;
+	border: 1px solid black;
+	padding: 10px;
+}

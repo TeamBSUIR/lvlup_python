@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{{ category.name }} expenses{% endblock title %}</title>
+</head>
+<body>
+{% block content %}
+    <link rel="stylesheet" href="{% static 'calc_app/css/category_items_style.css' %}">
+    <div class="container">
+    <div class="categ">
+        <h1>{{ category.name }}</h1>
+        <ul>
+            {% for item in items %}
+                <li>
+                    <label for="">Cost</label>
+                    {{ item.cost }}
+                    <label for="">Date</label>
+                    {{ item.date }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="stat">
+        <h2>Statistics according the month</h2>
+        <ul>
+            {% for number, name in category_months.items %}
+                <li><a href="{% url 'month_statistics' number category.pk %}">{{ name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="new">
+        <h2>New Item ?</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form | crispy }}
+            <button class="btn btn-primary">Create new</button>
+        </form>
+    </div>
+{% endblock content %}
+</div>
+</body>
+</html>

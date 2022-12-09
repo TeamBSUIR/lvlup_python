@@ -1,0 +1,50 @@
+body{
+    background-color: #b3d4e8;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.navbar{
+    background: linear-gradient(to top, #b3d4e8, white);
+    padding: 10px;
+    font-size: 20px;
+}
+
+.navbar-brand{
+    font-size: 25px;
+}
+
+.dropdown{
+    margin: 0 20px;
+}
+
+.btn{
+    background-color: #7ea6bd;
+    color: black;
+    border: none;
+}
+
+.btn:hover{
+    background-color: #9db8cc;
+    color: black;
+}
+
+.btn:after{
+    background-color: #9db8cc;
+    color: black;
+}
+
+.dropdown-menu{
+    background-color: #9db8cc;
+    color: black;
+    right: 0;
+    text-align: center;
+}
+
+
+a{
+    text-decoration: none;
+    color: black;
+}
+

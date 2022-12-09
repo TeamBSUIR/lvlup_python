@@ -1,0 +1,29 @@
+.container {
+    padding: 20px;
+    gap: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.row{
+    width: 100%;
+    display: flex;
+    gap: 150px;
+    align-items: center;
+}
+
+.categories{
+    font-size: 18px;
+}
+
+.col{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.month{
+    padding: 0 100px;
+}
