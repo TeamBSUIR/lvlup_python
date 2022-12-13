@@ -1,6 +1,7 @@
 import csv
 import matplotlib.pyplot as plt
 import modul
+
 """1.Add new payment
 To add new information
 2.Delete payment
@@ -17,6 +18,8 @@ To sort by one month
 To sort by month and categories
 0.Exit
 To close the program"""
+
+
 def menu():
     data = modul.information(budget_file="budget.csv")
     data.update()
