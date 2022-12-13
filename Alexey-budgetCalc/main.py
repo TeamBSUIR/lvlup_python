@@ -1,5 +1,3 @@
-import csv
-import matplotlib.pyplot as plt
 import modul
 
 """1.Add new payment
