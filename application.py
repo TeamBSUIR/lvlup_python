@@ -13,25 +13,25 @@ import matplotlib.pyplot as plt
 categoriesList = ["Food", "Clothes", "Entertainment", "Transportation", "Other"]
 
 
-def parseCategorieToNumber(category: str):
+def parseCategorieToNumber(category: str) -> int:
     for i in range(len(categoriesList)):
         if categoriesList[i] == category:
             return i + 1
+    return -1
 
 
 class spending:
     category: str
     amount: float
-    date: datetime
+    date: str
 
-    def __init__(self, category, amount, date):
+    def __init__(self, category: str, amount: float, date: str):
         self.category = category
         self.amount = amount
         self.date = date
 
-    def toString(self):
+    def toString(self) -> str:
         return f"{self.category},{self.date},{self.amount}"
-
 
 class fileManipulation:
     filename: str = "spending.csv"
@@ -41,26 +41,24 @@ class fileManipulation:
         Write spending object to csv file and read from csv file.
     """
 
-    def writeToFile(self, spending):
+    def writeToFile(self, spending: spending) -> None:
         with open(self.filename, "a", newline="") as file:
             writer = csv.writer(file)
             writer.writerow([spending.category, spending.date, spending.amount])
 
-    def readFromFile(self):
+    def readFromFile(self) -> None:
         with open(self.filename, "r") as file:
             reader = csv.reader(file)
             for row in reader:
                 print(row[0] + " " + row[1] + " " + row[2])
-
-    # ! check if date is in correct format, use regex exrp
-    # @input date: str in format year-month. e.g: 2021-01
-    # @return list of spending objects
-    # create from list diagram
-    def readFromFile_byDate(self, date: str):
-        result = re.match(
-            r"\d{4}-\d{2}", date
-        )  # check if valid regex expression? try 2022-10, 2022-01
-        # [and try for invalid date e.g 2022-99]
+   
+   
+    """
+    @input date: str in format year-month. e.g: 2021-01
+    @return list of spending objects 
+    """
+    def readFromFile_byDate(self, date: str) -> list or None:
+        result = re.match(r"\d{4}-\d{2}", date )
         if result is None:
             print("Invalid date format!")
             return
@@ -70,19 +68,21 @@ class fileManipulation:
             reader = csv.reader(file)
             for row in reader:
                 if date in row[1]:
-                    list.append(spending(row[0], row[2], row[1]))
+                    list.append(spending(row[0], float(row[2]), row[1]))
 
         return list
 
-    # @input category: str --- choosen from list in menu
-    # @return list of spending objects
-    def readFromFile_byCategory(self, category: str):
+    """
+    @input category: str in format year-month. e.g: 2021-01
+    @return list of spending objects
+    """
+    def readFromFile_byCategory(self, category: str) -> list[spending]:
         list = []
         with open(self.filename, "r") as file:
             reader = csv.reader(file)
             for row in reader:
                 if category in row[0]:
-                    list.append(spending(row[0], row[2], row[1]))
+                    list.append(spending(row[0], float(row[2]), row[1]))
 
         return list
 
@@ -94,10 +94,10 @@ class fileManipulation:
 
 
 class menu:
-    def __init__(self):
+    def __init__(self) -> None:
         self.fileManipulation = fileManipulation()
 
-    def showMenu(self):
+    def showMenu(self) -> None:
         while True:
             print("1. Add new spending")
             print("2. Show all spending")
@@ -121,30 +121,35 @@ class menu:
             elif option == 6:
                 self.exit()
 
-    def addNewSpending(self):
+    def addNewSpending(self) -> None:
         print("Choose category:")
         for i in range(len(categoriesList)):
             print(f"{i+1}. {categoriesList[i]}")
 
         category = int(input("Enter number: "))
         amount = float(input("Enter amount: "))
-        date = input("Enter date (YYYY-MM-DD): ")
-        date = datetime.datetime.strptime(date, "%Y-%m-%d")
+        date_str = input("Enter date (YYYY-MM-DD): ")
+        date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
 
         self.fileManipulation.writeToFile(
             spending(categoriesList[category - 1], amount, date.strftime("%Y-%m-%d"))
         )
 
-    def showAllSpending(self):
+    def showAllSpending(self) -> None:
         self.fileManipulation.readFromFile()
 
-    def showSpending_byDate(self):
+    def showSpending_byDate(self) -> None:
         date = input("Enter date (YYYY-MM): ")
         list = self.fileManipulation.readFromFile_byDate(date)
+
+        if list is None:
+            print("No spending in that month!")
+            return
+
         for i in list:
             print(i.toString())
 
-    def showSpending_byCategory(self):
+    def showSpending_byCategory(self) -> None:
         print("Choose category:")
         for i in range(len(categoriesList)):
             print(f"{i+1}. {categoriesList[i]}")
@@ -153,22 +158,26 @@ class menu:
         list = self.fileManipulation.readFromFile_byCategory(
             categoriesList[category - 1]
         )
-        for i in list:
-            print(i.toString())
 
-    def showDiagram(self):
+        if list is None:
+            print("No spending in that category!")
+            return
+
+        for i in range(len(list)):
+            print(list[i].toString())
+
+    def showDiagram(self) -> None:
         print("Enter date in such format 'YYYY-MM': ")
         date = str(input())
         result = re.match(
             r"\d{4}-\d{2}", date
-        )  # check if valid regex expression? try 2022-10, 2022-01  [and try for invalid date e.g 2022-99]
+        ) 
         if result is None:
             print("Invalid date format!")
             return
 
         list = self.fileManipulation.readFromFile_byDate(date)
 
-        # check if there were any spending in that month
         if len(list) == 0:
             print("No spending in that month!")
             return
@@ -184,7 +193,7 @@ class menu:
         ax1.axis("equal")
         plt.show()
 
-    def exit(self):
+    def exit(self) -> None:
         exit()
 
 
