@@ -1,0 +1,7 @@
+food
+clothes
+entertainment
+transportation
+other
+bar
+cafe
