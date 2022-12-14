@@ -16,3 +16,4 @@ urlpatterns = [
     ),
     path("category/month/<int:month>", SortByMonth.as_view(), name="month_detail"),
 ]
+

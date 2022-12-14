@@ -2,12 +2,11 @@ import base64
 from io import BytesIO
 import matplotlib.pyplot as plt
 
-
 def get_month_name(month_number):
     """
     returns the name of the month given in number
     """
-    dct = {
+    months_dictionary = {
         1: "January",
         2: "February",
         3: "March",
@@ -21,7 +20,7 @@ def get_month_name(month_number):
         11: "November",
         12: "December",
     }
-    return dct[month_number]
+    return months_dictionary[month_number]
 
 
 def get_months_numbs_and_names():
@@ -52,12 +51,24 @@ def get_plot(sizes, labels):
     """
     builds and returns graph
     """
-    plt.switch_backend("AGG")
-    plt.figure(figsize=(9, 5))
-    figure, axes = plt.subplots()
-    axes.pie(sizes, labels=labels, autopct="%1.1f%%", startangle=90)
-    axes.axis("equal")
-    figure.patch.set_facecolor("#b3d4e8")
-    figure.patch.set_alpha(0.6)
+    fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
+
+    data = [float(x) for x in sizes]
+    labs = [x for x in labels]
+
+    wedges, texts = ax.pie(data, textprops=dict(color="w"))
+
+    ax.legend(
+        wedges,
+        labs,
+        title="Categories",
+        loc="center left",
+        bbox_to_anchor=(1, 0, 0.5, 1),
+    )
+
+    ax.set_title("Purchase statistics")
+
+    fig.patch.set_facecolor("#b3d4e8")
+    fig.patch.set_alpha(0.6)
     graph = get_graph()
     return graph

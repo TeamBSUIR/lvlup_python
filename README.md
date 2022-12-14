@@ -10,7 +10,13 @@
     $ source ./venv/bin/activate
 
     $ pip install -r requirements.txt
-    
+
+    # Creating migration
+    $ python manage.py makemigrations
+
+    # Connecting migration to the database
+    $ python manage.py migrate
+
     # start server on localhost
     $ python manage.py runserver
 ## New Ideas to implement: ##

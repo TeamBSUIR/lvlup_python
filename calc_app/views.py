@@ -1,9 +1,12 @@
+# Third party imports
 from django.shortcuts import render
 from django.views.generic import View
-from .models import Category, ExpenseItem
-from .forms import CategoryModelForm, ExpenseItemModelForm
+
+# Local application imports
+import calc_app.models as models
+import calc_app.forms as forms
+import calc_app.utils as utils
 from .aggregations import get_categories_costs
-from .utils import get_plot, get_month_name, get_months_numbs_and_names
 
 
 def get_global_context(items, month):
@@ -13,9 +16,9 @@ def get_global_context(items, month):
     total_sum = sum(
         item.cost for item in items
     )  # getting the sum of all instances according to the items variable
-    month_name = get_month_name(month)
-    months = get_months_numbs_and_names()  # for dropdown menu
-    categories = Category.objects.all().order_by("name")
+    month_name = utils.get_month_name(month)
+    months = utils.get_months_numbs_and_names()  # for dropdown menu
+    categories = models.Category.objects.order_by("name")
     return {
         "items": items,
         "total_sum": total_sum,
@@ -35,16 +38,13 @@ class SortByMonth(View):
         formats global context according to the given variables
         """
         items = (
-            ExpenseItem.objects.select_related("category")  # grouping items by category
+            models.ExpenseItem.objects.select_related("category")  # grouping items by category
             .filter(date__month=month)
             .order_by("category__name")
         )
         return get_global_context(items, month)
 
     def get(self, request, month):
-        """
-        Controller for get-request
-        """
         context = self.get_context(month)
         return render(request, "calc_app/month_detail.html", context)
 
@@ -59,7 +59,7 @@ class SortByCategoryAndMonthView(View):
         formats global context according to the given variables
         """
         items = (
-            ExpenseItem.objects.filter(
+            models.ExpenseItem.objects.filter(
                 category_id=category_id
             )  # grouping items by the category and the month
             .filter(date__month=month)
@@ -68,9 +68,6 @@ class SortByCategoryAndMonthView(View):
         return get_global_context(items, month)
 
     def get(self, request, month, category_id):
-        """
-        Controller for get-request
-        """
         context = self.get_context(month, category_id)
         return render(request, "calc_app/month_category_detail.html", context)
 
@@ -84,11 +81,11 @@ class CategoryListView(View):
         """
         returns updated instance of the graph
         """
-        categories = Category.objects.order_by(
+        categories = models.Category.objects.order_by(
             "name"
         )  # collecting some data need to update the graph
         names = tuple(category.name for category in categories)
-        chart = get_plot(
+        chart = utils.get_plot(
             get_categories_costs(names), tuple(names)
         )  # updating the graph
         return chart
@@ -97,13 +94,13 @@ class CategoryListView(View):
         """
         returns context of collected variables
         """
-        form = CategoryModelForm()
-        categories = Category.objects.order_by("name")  # data to update the graph
+        form = forms.CategoryModelForm()
+        categories = models.Category.objects.order_by("name")  # data to update the graph
         names = tuple([category.name for category in categories])
-        chart = get_plot(
+        chart = utils.get_plot(
             get_categories_costs(names), tuple(names)
         )  # updating the graph
-        months = get_months_numbs_and_names().items()  # month's for the dropdown menu
+        months = utils.get_months_numbs_and_names()  # month's for the dropdown menu
         return {
             "categories": categories,
             "form": form,
@@ -112,22 +109,16 @@ class CategoryListView(View):
         }
 
     def get(self, request):
-        """
-        Controller for get-requests
-        """
         return render(
             request, "calc_app/category_list.html", context=self.get_context()
         )
 
     def post(self, request):
-        """
-        Controller for post-requests
-        """
-        form = CategoryModelForm(request.POST)
+        form = forms.CategoryModelForm(request.POST)
         context = self.get_context()
         if form.is_valid():
             form.save()
-            context["categories"] = Category.objects.order_by(
+            context["categories"] = models.Category.objects.order_by(
                 "name"
             )  # updating sensetive info if succeed
             context["chart"] = self.update_graph()
@@ -143,22 +134,18 @@ class CategoryItemsView(View):
 
     def get_context(self, pk):
         """
-        Forms the context dictionary of variables to be rendered in a temolate
+        Forms the context dictionary of variables to be rendered in a template
         """
-        categories = Category.objects.order_by(
+        categories = models.Category.objects.order_by(
             "name"
         )  # all the categories to be inserted in the dropdown menu
-        items = ExpenseItem.objects.filter(
+        items = models.ExpenseItem.objects.filter(
             category_id=pk
         )  # items related to the current category
-        category = Category.objects.get(pk=pk)  # current category
-        category_months = (
-            {}
-        )  # month's that the items of the current category were bought
-        for item in items:
-            category_months[item.date.month] = get_month_name(item.date.month)
-        months = get_months_numbs_and_names()  # all the month's for the dropdown menu
-        form = ExpenseItemModelForm()  # form to create new instances of ExpenseItem
+        category = models.Category.objects.get(pk=pk)  # current category
+        category_months = {item.date.month: utils.get_month_name(item.date.month) for item in items}
+        months = utils.get_months_numbs_and_names()  # all the month's for the dropdown menu
+        form = forms.ExpenseItemModelForm()  # form to create new instances of ExpenseItem
         return {
             "items": items,
             "category": category,
@@ -172,23 +159,19 @@ class CategoryItemsView(View):
         """
         Update querysets to display correct ExpenseItem's instances and month's
         """
-        items = ExpenseItem.objects.filter(category_id=pk)
+        items = models.ExpenseItem.objects.filter(category_id=pk)
         months = {}
         for item in items:
-            months[item.date.month] = get_month_name(item.date.month)
+            months[item.date.month] = utils.get_month_name(item.date.month)
         return items, months
 
     def get(self, request, pk):
-        """
-        Controller for get-request
-        """
         context = self.get_context(pk)
         return render(request, "calc_app/category_items.html", context)
 
     def post(self, request, pk):
-        """Controller for post-request"""
         context = self.get_context(pk)
-        form = ExpenseItemModelForm(
+        form = forms.ExpenseItemModelForm(
             request.POST
         )  # getting the potential new object to the form
         if form.is_valid():

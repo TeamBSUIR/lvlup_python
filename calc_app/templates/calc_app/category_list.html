@@ -50,7 +50,7 @@
         <div class="col">
             <h2 class="month">Month's statistics</h2>
             <ul>
-                {% for month in months %}
+                {% for month in months.items %}
                     <li><a href="{% url 'month_detail' month.0 %}">{{month.1}}</a></li>
                 {% endfor %}
             </ul>
