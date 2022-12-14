@@ -5,3 +5,4 @@ transportation
 other
 bar
 cafe
+phone

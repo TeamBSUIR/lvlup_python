@@ -10,11 +10,6 @@ class fileManipulation:
     def __init__(self, filename: str) -> None:
         self.filename = filename
 
-    """
-        Class to manipulate the file with the spending data.
-        Write spending object to csv file and read from csv file.
-    """
-
     def write_to_file(self, spending: Spending) -> None:
         with open(self.filename, "a", newline="") as file:
             writ = csv.writer(file)
@@ -26,16 +21,10 @@ class fileManipulation:
             for row in read:
                 print(row[0] + " " + row[1] + " " + row[2])
 
-    """
-    @input date: str in format year-month. e.g: 2021-01
-    @return list of spending objects
-    """
-
-    def get_date_list(self, date: str) -> list or None:
+    def get_date_list(self, date: str) -> list[Spending]:
         result = re.match(r"\d{4}-\d{2}", date)
         if result is None:
-            print("Invalid date format!")
-            return
+            raise Exception("Error data format")
 
         list = []
         with open(self.filename, "r") as file:
@@ -45,11 +34,6 @@ class fileManipulation:
                     list.append(Spending(row[0], float(row[2]), row[1]))
 
         return list
-
-    """
-    @input category: str category
-    @return list of spending objects
-    """
 
     def get_category_list(self, category: str) -> list[Spending]:
         list = []

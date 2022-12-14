@@ -1,6 +1,3 @@
-from category import *
-
-
 class Spending:
     category: str
     amount: float

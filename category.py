@@ -9,9 +9,13 @@ class Category:
         file.close()
         return self.categories
 
+    def parse_to_int(self, category: str) -> int:
+        return Category().get_category().index(category)
+
     def add_category(self, category: str) -> None:
         category = category.lower()
 
+        self.categories = self.get_category()
         for item in self.categories:
             if item == category:
                 raise Exception(ValueError("Alredy excist category"))

@@ -5,7 +5,7 @@ from file_system import fileManipulation
 from spending import Spending
 from category import Category
 
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt  # type: ignore
 
 
 class Menu:
@@ -94,26 +94,40 @@ class Menu:
             print("Invalid date format!")
             return
 
-        list = file.get_date_list(date)
+        lst = file.get_date_list(date)
 
-        if len(list) == 0:
+        if len(lst) == 0:
             print("No spending in that month!")
             return
 
-        amount = [0.0, 0.0, 0.0, 0.0, 0.0]
-        for i in list:
-            amount[parseCategorieToNumber(i.category) - 1] += float(i.amount)
+        cats: list[str] = Category().get_category()
+        amount: list[float] = [0.0] * len(cats)
+        for i in lst:
+            amount[Category().parse_to_int(i.category) - 1] += float(i.amount)
+
+        newlist1: list[float] = []
+        newlist2: list[str] = []
+
+        for i in range(len(amount)):
+            if amount[i] != 0.0:
+                newlist1.append(amount[i])
+                newlist2.append(cats[i])
 
         fig1, ax1 = plt.subplots()
         ax1.pie(
-            amount,
-            labels=CATEGORIES_LIST,
+            newlist1,
+            labels=newlist2,
             autopct="%1.1f%%",
             shadow=True,
             startangle=90,
         )
         ax1.axis("equal")
         plt.show()
+
+    def add_new_category(self) -> None:
+        print("Enter name of new category:")
+        category = str(input())
+        Category().add_category(category)
 
     def exit(self) -> None:
         exit()
