@@ -1,26 +1,29 @@
 import csv
 import re
 
-from app import Spending
+from spending import Spending
+
 
 class fileManipulation:
-    filename: str = "spending.csv"
+    filename: str
+
+    def __init__(self, filename: str) -> None:
+        self.filename = filename
 
     """
         Class to manipulate the file with the spending data.
         Write spending object to csv file and read from csv file.
     """
 
-    def read_from_file(self, spending: Spending) -> None:
+    def write_to_file(self, spending: Spending) -> None:
         with open(self.filename, "a", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow(
-                [spending.category, spending.date, spending.amount])
+            writ = csv.writer(file)
+            writ.writerow([spending.category, spending.date, spending.amount])
 
     def read_from_file(self) -> None:
         with open(self.filename, "r") as file:
-            reader = csv.reader(file)
-            for row in reader:
+            read = csv.reader(file)
+            for row in read:
                 print(row[0] + " " + row[1] + " " + row[2])
 
     """
@@ -28,7 +31,7 @@ class fileManipulation:
     @return list of spending objects
     """
 
-    def read_from_file_by_date(self, date: str) -> list or None:
+    def get_date_list(self, date: str) -> list or None:
         result = re.match(r"\d{4}-\d{2}", date)
         if result is None:
             print("Invalid date format!")
@@ -48,12 +51,12 @@ class fileManipulation:
     @return list of spending objects
     """
 
-    def read_from_file_by_category(self, category: str) -> list[Spending]:
+    def get_category_list(self, category: str) -> list[Spending]:
         list = []
         with open(self.filename, "r") as file:
             reader = csv.reader(file)
             for row in reader:
-                if category in row[0]:
+                if category == row[0]:
                     list.append(Spending(row[0], float(row[2]), row[1]))
 
         return list
