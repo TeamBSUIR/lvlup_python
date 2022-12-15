@@ -2,9 +2,10 @@ import base64
 from io import BytesIO
 import matplotlib.pyplot as plt
 
-def get_month_name(month_number):
+
+def get_months_numbs_and_names():
     """
-    returns the name of the month given in number
+    returns numbers and related month's names
     """
     months_dictionary = {
         1: "January",
@@ -20,17 +21,7 @@ def get_month_name(month_number):
         11: "November",
         12: "December",
     }
-    return months_dictionary[month_number]
-
-
-def get_months_numbs_and_names():
-    """
-    returns numbers and related month's names
-    """
-    months = {}
-    for i in range(1, 13):
-        months[i] = get_month_name(i)
-    return months
+    return months_dictionary
 
 
 def get_graph():
@@ -39,10 +30,14 @@ def get_graph():
     """
     buffer = BytesIO()
     plt.savefig(buffer, format="png")
+
     buffer.seek(0)
+
     image_png = buffer.getvalue()
+
     graph = base64.b64encode(image_png)
     graph = graph.decode("utf-8")
+
     buffer.close()
     return graph
 
@@ -70,5 +65,5 @@ def get_plot(sizes, labels):
 
     fig.patch.set_facecolor("#b3d4e8")
     fig.patch.set_alpha(0.6)
-    graph = get_graph()
-    return graph
+
+    return get_graph()

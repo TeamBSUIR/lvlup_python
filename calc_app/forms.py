@@ -1,14 +1,14 @@
 from django.forms import ModelForm
-from .models import ExpenseItem, Category
+from calc_app.models import ExpenseItem, Category
 
 
 class ExpenseItemModelForm(ModelForm):
     class Meta:
         model = ExpenseItem
-        fields = "__all__"
+        fields = ["category", "cost", "date"]
 
 
 class CategoryModelForm(ModelForm):
     class Meta:
         model = Category
-        fields = "__all__"
+        fields = ["name"]

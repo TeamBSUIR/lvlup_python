@@ -6,7 +6,7 @@ from django.views.generic import View
 import calc_app.models as models
 import calc_app.forms as forms
 import calc_app.utils as utils
-from .aggregations import get_categories_costs
+from calc_app.aggregations import get_categories_costs
 
 
 def get_global_context(items, month):
@@ -16,8 +16,9 @@ def get_global_context(items, month):
     total_sum = sum(
         item.cost for item in items
     )  # getting the sum of all instances according to the items variable
-    month_name = utils.get_month_name(month)
+
     months = utils.get_months_numbs_and_names()  # for dropdown menu
+    month_name = months[month]
     categories = models.Category.objects.order_by("name")
     return {
         "items": items,
@@ -38,7 +39,9 @@ class SortByMonth(View):
         formats global context according to the given variables
         """
         items = (
-            models.ExpenseItem.objects.select_related("category")  # grouping items by category
+            models.ExpenseItem.objects.select_related(
+                "category"
+            )  # grouping items by category
             .filter(date__month=month)
             .order_by("category__name")
         )
@@ -95,7 +98,9 @@ class CategoryListView(View):
         returns context of collected variables
         """
         form = forms.CategoryModelForm()
-        categories = models.Category.objects.order_by("name")  # data to update the graph
+        categories = models.Category.objects.order_by(
+            "name"
+        )  # data to update the graph
         names = tuple([category.name for category in categories])
         chart = utils.get_plot(
             get_categories_costs(names), tuple(names)
@@ -143,9 +148,13 @@ class CategoryItemsView(View):
             category_id=pk
         )  # items related to the current category
         category = models.Category.objects.get(pk=pk)  # current category
-        category_months = {item.date.month: utils.get_month_name(item.date.month) for item in items}
-        months = utils.get_months_numbs_and_names()  # all the month's for the dropdown menu
-        form = forms.ExpenseItemModelForm()  # form to create new instances of ExpenseItem
+        months = (
+            utils.get_months_numbs_and_names()
+        )  # dictionary with numbs and month's names
+        category_months = {item.date.month: months[item.date.month] for item in items}
+        form = (
+            forms.ExpenseItemModelForm()
+        )  # form to create new instances of ExpenseItem
         return {
             "items": items,
             "category": category,
@@ -161,8 +170,9 @@ class CategoryItemsView(View):
         """
         items = models.ExpenseItem.objects.filter(category_id=pk)
         months = {}
+        months_dict = utils.get_months_numbs_and_names()
         for item in items:
-            months[item.date.month] = utils.get_month_name(item.date.month)
+            months[item.date.month] = months_dict[item.date.month]
         return items, months
 
     def get(self, request, pk):

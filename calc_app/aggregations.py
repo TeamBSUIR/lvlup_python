@@ -1,4 +1,4 @@
-from .models import ExpenseItem
+from calc_app.models import ExpenseItem
 
 
 def get_categories_costs(names):

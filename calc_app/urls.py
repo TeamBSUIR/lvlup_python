@@ -1,10 +1,11 @@
 from django.urls import path
-from .views import (
+from calc_app.views import (
     CategoryListView,
     CategoryItemsView,
     SortByCategoryAndMonthView,
     SortByMonth,
 )
+
 
 urlpatterns = [
     path("", CategoryListView.as_view(), name="category_list"),
@@ -16,4 +17,3 @@ urlpatterns = [
     ),
     path("category/month/<int:month>", SortByMonth.as_view(), name="month_detail"),
 ]
-

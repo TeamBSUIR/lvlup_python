@@ -11,9 +11,6 @@
 
     $ pip install -r requirements.txt
 
-    # Creating migration
-    $ python manage.py makemigrations
-
     # Connecting migration to the database
     $ python manage.py migrate
 
