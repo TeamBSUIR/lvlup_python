@@ -1,12 +1,14 @@
+STORAGE_CATEGORIES_FILENAME = "categories.txt"
+
+
 class Category:
     def get_category(self) -> list[str]:
         self.categories = []
-        with open(file="categories.txt") as file:
+        with open(file=STORAGE_CATEGORIES_FILENAME) as file:
             for line in file:
                 x = line[:-1]
                 self.categories.append(x)
 
-        file.close()
         return self.categories
 
     def parse_to_int(self, category: str) -> int:
@@ -21,8 +23,6 @@ class Category:
                 raise Exception(ValueError("Alredy excist category"))
 
         self.categories.append(category)
-        with open(file="categories.txt", mode="w") as file:
+        with open(file=STORAGE_CATEGORIES_FILENAME, mode="w") as file:
             for item in self.categories:
                 file.write("%s\n" % item)
-
-        file.close()

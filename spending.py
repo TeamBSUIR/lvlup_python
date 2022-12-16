@@ -8,5 +8,5 @@ class Spending:
         self.amount = amount
         self.date = date
 
-    def to_str(self) -> str:
+    def __str__(self) -> str:
         return f"{self.category},{self.date},{self.amount}"
