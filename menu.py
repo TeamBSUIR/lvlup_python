@@ -27,21 +27,22 @@ class Menu:
 
             option = int(input("Enter number: "))
 
-            match option:
-                case 1:
-                    self.add_new_spending(file)
-                case 2:
-                    self.show_all_spendings(file)
-                case 3:
-                    self.show_spending_by_date(file)
-                case 4:
-                    self.show_spending_by_category(file)
-                case 5:
-                    self.show_diagram(file)
-                case 6:
-                    self.add_new_category()
-                case 7:
-                    self.exit()
+            if option == 1:
+                self.add_new_category(file)
+            elif option == 2:
+                self.show_all_spendings(file)
+            elif option == 3:
+                self.show_spending_by_date(file)
+            elif option == 4:
+                self.show_spending_by_category(file)
+            elif option == 5:
+                self.show_diagram(file)
+            elif option == 6:
+                self.add_new_category()
+            elif option == 7:
+                self.exit(0)
+            else:
+                raise Exception(ValueError("invalid value."))
 
     def add_new_spending(self, file: FileManipulator) -> None:
         print("Choose category:")
