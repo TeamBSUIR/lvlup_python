@@ -13,8 +13,7 @@ class FileManipulator:
     def write_to_file(self, spending: Spending) -> None:
         with open(self.filename, "a", newline="") as file:
             csv_writer = csv.writer(file)
-            csv_writer.writerow(
-                [spending.category, spending.date, spending.amount])
+            csv_writer.writerow([spending.category, spending.date, spending.amount])
 
     def read_from_file(self) -> None:
         with open(self.filename, "r") as file:

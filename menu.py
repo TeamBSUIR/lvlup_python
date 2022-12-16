@@ -72,7 +72,7 @@ class Menu:
             raise Exception(ValueError("Can`t find spendings in this month."))
 
         for i in list:
-            print(i.to_str())
+            print(i)
 
     def show_spending_by_category(self, file: FileManipulator) -> None:
         print("Choose category:")
@@ -86,7 +86,7 @@ class Menu:
             raise Exception("Can`t find spendings in this category.")
 
         for i in range(len(list)):
-            print(list[i].to_str())
+            print(list[i])
 
     def show_diagram(self, file: FileManipulator) -> None:
         print("Enter date in such format 'YYYY-MM': ")
