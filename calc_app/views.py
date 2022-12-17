@@ -1,6 +1,6 @@
 # Third party imports
 from django.shortcuts import render
-from django.views.generic import View
+from django.views.generic import View, TemplateView
 
 # Local application imports
 import calc_app.models as models
@@ -29,50 +29,34 @@ def get_global_context(items, month):
     }
 
 
-class SortByMonth(View):
-    """
-    view responsible for grouping by months
-    """
+class SortByMonthView(TemplateView):
+    template_name = 'calc_app/month_detail.html'
 
-    def get_context(self, month):
-        """
-        formats global context according to the given variables
-        """
+    def get_context_data(self, **kwargs):
+        context = super(SortByMonthView, self).get_context_data(**kwargs)
         items = (
             models.ExpenseItem.objects.select_related(
-                "category"
-            )  # grouping items by category
-            .filter(date__month=month)
-            .order_by("category__name")
+                'category'
+            )
+            .filter(date__month=kwargs['month'])
+            .order_by('category__name')
         )
-        return get_global_context(items, month)
-
-    def get(self, request, month):
-        context = self.get_context(month)
-        return render(request, "calc_app/month_detail.html", context)
+        return context | get_global_context(items, kwargs['month'])
 
 
-class SortByCategoryAndMonthView(View):
-    """
-    view responsible for grouping category's items by months
-    """
+class SortByCategoryAndMonthView(TemplateView):
+    template_name = "calc_app/month_category_detail.html"
 
-    def get_context(self, month, category_id):
-        """
-        formats global context according to the given variables
-        """
+    def get_context_data(self, **kwargs):
+        context = super(SortByCategoryAndMonthView, self).get_context_data(**kwargs)
         items = (
             models.ExpenseItem.objects.filter(
-                category_id=category_id
+                category_id=kwargs['category_id']
             )  # grouping items by the category and the month
-            .filter(date__month=month)
+            .filter(date__month=kwargs['month'])
             .order_by("date")
         )
-        return get_global_context(items, month)
-
-    def get(self, request, month, category_id):
-        context = self.get_context(month, category_id)
-        return render(request, "calc_app/month_category_detail.html", context)
+        return context | get_global_context(items, kwargs['month'])
 
 
 class CategoryListView(View):

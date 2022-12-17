@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "debug_toolbar",
     "rest_framework",
+    'tempus_dominus',
 ]
 
 MIDDLEWARE = [
@@ -79,6 +80,8 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+    # TEMPUS_DOMINUS_DATE_FORMAT = "DD/MM/YYYY"
 
 LANGUAGE_CODE = "en-us"
 
