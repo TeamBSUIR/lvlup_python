@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "calculator"
+version = "0.1.0"
+description = ""
+authors = ["Pavel Demeshkevich <dem-pasha@lenta.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "^4.1.4"
+djangorestframework = "^3.14.0"
+django-debug-toolbar = "^3.8.1"
+matplotlib = "^3.6.2"
+django-crispy-forms = "^1.14.0"
+django-tempus-dominus = "^5.1.2.17"
+psycopg2-binary = "^2.9.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
