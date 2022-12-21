@@ -1,32 +1,11 @@
 # Third party imports
 from django.shortcuts import render
-from django.views.generic import View, TemplateView
+from django.views.generic import TemplateView, ListView
 
 # Local application imports
 import calc_app.models as models
 import calc_app.forms as forms
-import calc_app.utils as utils
-from calc_app.aggregations import get_categories_costs
-
-
-def get_global_context(items, month):
-    """
-    returns context dictionary that includes common rendering variables
-    """
-    total_sum = sum(
-        item.cost for item in items
-    )  # getting the sum of all instances according to the items variable
-
-    months = utils.get_months_numbs_and_names()  # for dropdown menu
-    month_name = months[month]
-    categories = models.Category.objects.order_by("name")
-    return {
-        "items": items,
-        "total_sum": total_sum,
-        "month_name": month_name,
-        "months": months,
-        "categories": categories,
-    }
+from calc_app.context import get_global_context, get_category_list_view_context, get_category_items_view_context
 
 
 class SortByMonthView(TemplateView):
@@ -59,122 +38,54 @@ class SortByCategoryAndMonthView(TemplateView):
         return context | get_global_context(items, kwargs['month'])
 
 
-class CategoryListView(View):
+class CategoryListView(ListView):
     """
-    view responsible for representation of category's list and the diagram
+    features:
+    - we don't use object_list context variable in the template
+    because we already have <categories> variable wich is rendered in each
+    template that was inherited from 'base.html' and it has the same functionality.
+    - <get_context_data> method calls external <get_category_list_view_context>.
+    It was made to update context in the <post> view. It is possible to change this
+    behavior, but there is no need in it
     """
+    model = models.Category
+    template_name = 'calc_app/category_list.html'
 
-    def update_graph(self):
-        """
-        returns updated instance of the graph
-        """
-        categories = models.Category.objects.order_by(
-            "name"
-        )  # collecting some data need to update the graph
-        names = tuple(category.name for category in categories)
-        chart = utils.get_plot(
-            get_categories_costs(names), tuple(names)
-        )  # updating the graph
-        return chart
-
-    def get_context(self):
-        """
-        returns context of collected variables
-        """
-        form = forms.CategoryModelForm()
-        categories = models.Category.objects.order_by(
-            "name"
-        )  # data to update the graph
-        names = tuple([category.name for category in categories])
-        chart = utils.get_plot(
-            get_categories_costs(names), tuple(names)
-        )  # updating the graph
-        months = utils.get_months_numbs_and_names()  # month's for the dropdown menu
-        return {
-            "categories": categories,
-            "form": form,
-            "chart": chart,
-            "months": months,
-        }
-
-    def get(self, request):
-        return render(
-            request, "calc_app/category_list.html", context=self.get_context()
-        )
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(CategoryListView, self).get_context_data(**kwargs)
+        custom_context_variables = get_category_list_view_context(self.get_queryset())
+        return context | custom_context_variables
 
     def post(self, request):
         form = forms.CategoryModelForm(request.POST)
-        context = self.get_context()
         if form.is_valid():
             form.save()
-            context["categories"] = models.Category.objects.order_by(
-                "name"
-            )  # updating sensetive info if succeed
-            context["chart"] = self.update_graph()
         else:
-            context["form"] = form  # returning form with invalid data back
-        return render(request, "calc_app/category_list.html", context=context)
+            return render(request, self.template_name,
+                          get_category_list_view_context(self.get_queryset()) | {'form': form})
+        return render(request, self.template_name, get_category_list_view_context(self.get_queryset()))
 
 
-class CategoryItemsView(View):
+class CategoryItemsView(ListView):
     """
-    view responsible for representation of the items related to the category
+    features:
+    - if you want to use <object_list> you'll override
+    <get_queryset> method. In our case <items> context
+    variable substitutes <object_list>.
     """
+    template_name = 'calc_app/category_items.html'
+    model = models.ExpenseItem
 
-    def get_context(self, pk):
-        """
-        Forms the context dictionary of variables to be rendered in a template
-        """
-        categories = models.Category.objects.order_by(
-            "name"
-        )  # all the categories to be inserted in the dropdown menu
-        items = models.ExpenseItem.objects.filter(
-            category_id=pk
-        )  # items related to the current category
-        category = models.Category.objects.get(pk=pk)  # current category
-        months = (
-            utils.get_months_numbs_and_names()
-        )  # dictionary with numbs and month's names
-        category_months = {item.date.month: months[item.date.month] for item in items}
-        form = (
-            forms.ExpenseItemModelForm()
-        )  # form to create new instances of ExpenseItem
-        return {
-            "items": items,
-            "category": category,
-            "category_months": category_months,
-            "form": form,
-            "categories": categories,
-            "months": months,
-        }
-
-    def update_querysets(self, pk):
-        """
-        Update querysets to display correct ExpenseItem's instances and month's
-        """
-        items = models.ExpenseItem.objects.filter(category_id=pk)
-        months = {}
-        months_dict = utils.get_months_numbs_and_names()
-        for item in items:
-            months[item.date.month] = months_dict[item.date.month]
-        return items, months
-
-    def get(self, request, pk):
-        context = self.get_context(pk)
-        return render(request, "calc_app/category_items.html", context)
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(CategoryItemsView, self).get_context_data(**kwargs)
+        custom_context = get_category_items_view_context(self.kwargs['pk'])
+        return context | custom_context
 
     def post(self, request, pk):
-        context = self.get_context(pk)
-        form = forms.ExpenseItemModelForm(
-            request.POST
-        )  # getting the potential new object to the form
+        form = forms.ExpenseItemModelForm(request.POST)
         if form.is_valid():
             form.save()
-            context["items"], context["category_months"] = self.update_querysets(
-                pk
-            )  # updating lists of items and month's if succeed
         else:
-            context[
-                "form"
-            ] = form  # returning the invalid form back not to make user to enter the data another time
-        return render(request, "calc_app/category_items.html", context)
+            return render(request, self.template_name, get_category_items_view_context(pk) | {'form': form})
+        return render(request, self.template_name, get_category_items_view_context(pk))
+
