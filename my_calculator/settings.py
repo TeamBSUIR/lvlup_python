@@ -3,7 +3,9 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY') # "django-insecure-g_zxisi2)wtl$eyv-z-_k2*bj)_$p#30ikm#q_*us^mg*)*al*"
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY"
+)
 DEBUG = True
 
 ALLOWED_HOSTS = ["127.0.0.1"]
@@ -19,7 +21,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "debug_toolbar",
     "rest_framework",
-    'tempus_dominus',
+    "tempus_dominus",
 ]
 
 MIDDLEWARE = [
@@ -60,10 +62,10 @@ TEMPLATES = [
 WSGI_APPLICATION = "my_calculator.wsgi.application"
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': os.environ.get("POSTGRES_USER"),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "postgres",
+        "USER": os.environ.get("POSTGRES_USER"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
         "HOST": "db",
         "PORT": 5432,
@@ -85,7 +87,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-    # TEMPUS_DOMINUS_DATE_FORMAT = "DD/MM/YYYY"
+# TEMPUS_DOMINUS_DATE_FORMAT = "DD/MM/YYYY"
 
 LANGUAGE_CODE = "en-us"
 

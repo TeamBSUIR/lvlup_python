@@ -1,8 +1,17 @@
 from calc_app.models import Category
 from calc_app.utils import get_months_numbs_and_names
 from calc_app import utils, forms
-from calc_app.aggregations import get_categories_costs
 from calc_app import models
+
+
+def get_categories_costs(names):
+    """
+    calculates the purchases cost per category
+    """
+    name_dict = {name: 0 for name in names}
+    for item in models.ExpenseItem.objects.select_related("category"):
+        name_dict[item.category.name] += item.cost
+    return list(name_dict.values())
 
 
 def get_global_context(items, month):
@@ -28,30 +37,20 @@ def get_global_context(items, month):
 def get_category_list_view_context(queryset):
     names = tuple([category.name for category in queryset])
     return {
-        'form': forms.CategoryModelForm(),
-        'months': utils.get_months_numbs_and_names(),
-        'categories': queryset,
-        'chart': utils.get_plot(
-            get_categories_costs(names), names
-        )
+        "form": forms.CategoryModelForm(),
+        "months": utils.get_months_numbs_and_names(),
+        "categories": queryset,
+        "chart": utils.get_plot(get_categories_costs(names), names),
     }
 
 
 def get_category_items_view_context(pk):
-    categories = models.Category.objects.order_by(
-        "name"
-    )
-    items = models.ExpenseItem.objects.filter(
-        category_id=pk
-    )
+    categories = models.Category.objects.order_by("name")
+    items = models.ExpenseItem.objects.filter(category_id=pk)
     category = models.Category.objects.get(pk=pk)
-    months = (
-        utils.get_months_numbs_and_names()
-    )
+    months = utils.get_months_numbs_and_names()
     category_months = {item.date.month: months[item.date.month] for item in items}
-    form = (
-        forms.ExpenseItemModelForm()
-    )
+    form = forms.ExpenseItemModelForm()
     return {
         "items": items,
         "category": category,

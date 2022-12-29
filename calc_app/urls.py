@@ -1,9 +1,9 @@
 from django.urls import path
 from calc_app.views import (
+    SortByCategoryAndMonthView,
+    SortByMonthView,
     CategoryListView,
     CategoryItemsView,
-    SortByMonthView,
-    SortByCategoryAndMonthView,
 )
 
 urlpatterns = [

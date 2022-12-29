@@ -26,7 +26,8 @@ def get_months_numbs_and_names():
 
 def get_graph():
     """
-    returns graph image
+    returns the image of plot
+    that was saved in plt
     """
     buffer = BytesIO()
     plt.savefig(buffer, format="png")
@@ -42,28 +43,49 @@ def get_graph():
     return graph
 
 
+def parallel_sort(first, second):
+    """
+    Sorts two connected lists(tuples)
+    """
+    dictionary = {f: s for f, s in zip(first, second)}
+    pair_list = sorted(dictionary.items(), reverse=True)
+    first = []
+    second = []
+    for pair in pair_list:
+        first.append(pair[0])
+        second.append(pair[1])
+    return first, second
+
+
 def get_plot(sizes, labels):
     """
-    builds and returns graph
+    returns built plot
     """
-    fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
+    if sizes is None:
+        return None
+    else:
 
-    data = [float(x) for x in sizes]
-    labs = [x for x in labels]
+        # parallel sorting two lists
+        sizes, labels = parallel_sort(sizes, labels)
+        # building the plot
+        fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
 
-    wedges, texts = ax.pie(data, textprops=dict(color="w"))
+        data = [float(x) for x in sizes]
+        labs = [x for x in labels]
 
-    ax.legend(
-        wedges,
-        labs,
-        title="Categories",
-        loc="center left",
-        bbox_to_anchor=(1, 0, 0.5, 1),
-    )
+        wedges, texts = ax.pie(data, textprops=dict(color="w"))
 
-    ax.set_title("Purchase statistics")
+        ax.legend(
+            wedges[:10],
+            labs[:10],
+            title="Categories",
+            loc="center left",
+            bbox_to_anchor=(1, 0, 0.5, 1),
+        )
 
-    fig.patch.set_facecolor("#b3d4e8")
-    fig.patch.set_alpha(0.6)
+        ax.set_title("Top 10 purchase categories")
 
-    return get_graph()
+        fig.patch.set_facecolor("#b3d4e8")
+        fig.patch.set_alpha(0.6)
+
+        return get_graph()

@@ -5,6 +5,7 @@ from tempus_dominus.widgets import DatePicker
 
 class ExpenseItemModelForm(forms.ModelForm):
     date = forms.DateField(widget=DatePicker())
+
     class Meta:
         model = ExpenseItem
         fields = ["category", "cost", "date"]
