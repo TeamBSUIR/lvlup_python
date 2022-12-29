@@ -3,8 +3,7 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
-
+SECRET_KEY = os.environ.get('SECRET_KEY') # "django-insecure-g_zxisi2)wtl$eyv-z-_k2*bj)_$p#30ikm#q_*us^mg*)*al*"
 DEBUG = True
 
 ALLOWED_HOSTS = ["127.0.0.1"]
@@ -61,13 +60,13 @@ TEMPLATES = [
 WSGI_APPLICATION = "my_calculator.wsgi.application"
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        'NAME': os.environ.get('NAME'), 
-        'USER': os.environ.get('USER'),
-        'PASSWORD': os.environ.get('PASSWORD'),
-        'HOST': os.environ.get('HOST'), 
-        'PORT': os.environ.get('PORT'),
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': os.environ.get("POSTGRES_USER"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+        "HOST": "db",
+        "PORT": 5432,
     }
 }
 
