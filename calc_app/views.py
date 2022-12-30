@@ -1,26 +1,51 @@
 # Third party imports
-from django.shortcuts import render
-from django.views.generic import TemplateView, ListView
+from django.shortcuts import render, redirect
+from django.urls import reverse
+from django.views.generic import TemplateView, ListView, CreateView
 
 # Local application imports
 import calc_app.models as models
 import calc_app.forms as forms
-from calc_app.context import get_global_context, get_category_list_view_context, get_category_items_view_context
+from calc_app.utils import get_months_numbs_and_names
+from calc_app.context import (
+    get_global_context,
+    get_category_list_view_context,
+    get_category_items_view_context,
+)
+
+
+class ItemCreateView(TemplateView):
+    template_name = "calc_app/create_items.html"
+
+    def post(self, request):
+        context = {}
+        form = forms.ExpenseItemModelForm(request.POST)
+        if form.is_valid():
+            form.save()
+        else:
+            context["form"] = form
+            render(request, self.template_name, self.get_context_data() | context)
+        return redirect(reverse("category_list"))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = models.Category.objects.order_by("name")
+        context["months"] = get_months_numbs_and_names()
+        context["form"] = forms.ExpenseItemModelForm()
+        return context
 
 
 class SortByMonthView(TemplateView):
-    template_name = 'calc_app/month_detail.html'
+    template_name = "calc_app/month_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super(SortByMonthView, self).get_context_data(**kwargs)
         items = (
-            models.ExpenseItem.objects.select_related(
-                'category'
-            )
-            .filter(date__month=kwargs['month'])
-            .order_by('category__name')
+            models.ExpenseItem.objects.select_related("category")
+            .filter(date__month=kwargs["month"])
+            .order_by("category__name")
         )
-        return context | get_global_context(items, kwargs['month'])
+        return context | get_global_context(items, kwargs["month"])
 
 
 class SortByCategoryAndMonthView(TemplateView):
@@ -30,12 +55,12 @@ class SortByCategoryAndMonthView(TemplateView):
         context = super(SortByCategoryAndMonthView, self).get_context_data(**kwargs)
         items = (
             models.ExpenseItem.objects.filter(
-                category_id=kwargs['category_id']
+                category_id=kwargs["category_id"]
             )  # grouping items by the category and the month
-            .filter(date__month=kwargs['month'])
+            .filter(date__month=kwargs["month"])
             .order_by("date")
         )
-        return context | get_global_context(items, kwargs['month'])
+        return context | get_global_context(items, kwargs["month"])
 
 
 class CategoryListView(ListView):
@@ -48,8 +73,9 @@ class CategoryListView(ListView):
     It was made to update context in the <post> view. It is possible to change this
     behavior, but there is no need in it
     """
+
     model = models.Category
-    template_name = 'calc_app/category_list.html'
+    template_name = "calc_app/category_list.html"
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(CategoryListView, self).get_context_data(**kwargs)
@@ -61,9 +87,16 @@ class CategoryListView(ListView):
         if form.is_valid():
             form.save()
         else:
-            return render(request, self.template_name,
-                          get_category_list_view_context(self.get_queryset()) | {'form': form})
-        return render(request, self.template_name, get_category_list_view_context(self.get_queryset()))
+            return render(
+                request,
+                self.template_name,
+                get_category_list_view_context(self.get_queryset()) | {"form": form},
+            )
+        return render(
+            request,
+            self.template_name,
+            get_category_list_view_context(self.get_queryset()),
+        )
 
 
 class CategoryItemsView(ListView):
@@ -73,12 +106,13 @@ class CategoryItemsView(ListView):
     <get_queryset> method. In our case <items> context
     variable substitutes <object_list>.
     """
-    template_name = 'calc_app/category_items.html'
+
+    template_name = "calc_app/category_items.html"
     model = models.ExpenseItem
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(CategoryItemsView, self).get_context_data(**kwargs)
-        custom_context = get_category_items_view_context(self.kwargs['pk'])
+        custom_context = get_category_items_view_context(self.kwargs["pk"])
         return context | custom_context
 
     def post(self, request, pk):
@@ -86,6 +120,18 @@ class CategoryItemsView(ListView):
         if form.is_valid():
             form.save()
         else:
-            return render(request, self.template_name, get_category_items_view_context(pk) | {'form': form})
+            return render(
+                request,
+                self.template_name,
+                get_category_items_view_context(pk) | {"form": form},
+            )
         return render(request, self.template_name, get_category_items_view_context(pk))
 
+
+# class YearSelectionView(TemplateView):
+#     template_name = 'calc_app/year_choise.html'
+#
+#     def get_context_data(self, **kwargs):
+#         context = super(YearSelectionView, self).get_context_data(**kwargs)
+#         context['years'] = sorted(set(item.date.year for item in models.ExpenseItem.objects.all()), reverse=True)
+#         context['months']

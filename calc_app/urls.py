@@ -4,6 +4,7 @@ from calc_app.views import (
     SortByMonthView,
     CategoryListView,
     CategoryItemsView,
+    ItemCreateView,
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
         name="month_statistics",
     ),
     path("category/month/<int:month>", SortByMonthView.as_view(), name="month_detail"),
+    path("expense/create_new/", ItemCreateView.as_view(), name="create_item"),
 ]
