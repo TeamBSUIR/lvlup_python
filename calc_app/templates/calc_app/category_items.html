@@ -21,7 +21,7 @@
         <h2>Statistics according the month</h2>
         <ul>
             {% for number, name in category_months.items %}
-                <li><a href="{% url 'month_statistics' number category.pk %}">{{ name }}</a></li>
+                <li><a href="{% url 'calc_app:month_statistics' year number category.pk %}">{{ name }}</a></li>
             {% endfor %}
         </ul>
     </div>

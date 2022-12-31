@@ -39,14 +39,14 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'category_list' %}">Home</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'calc_app:category_list' year %}">Home</a>
                 </li>
             </ul>
         </div>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'create_item' %}">Create New Item</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'calc_app:create_item' year %}">Create New Item</a>
                 </li>
             </ul>
         </div>
@@ -58,7 +58,7 @@
             </button>
             <ul class="dropdown-menu">
                 {% for category in categories %}
-                    <li><a href="{% url 'category_items' category.pk %}">{{ category.name }}</a></li>
+                    <li><a href="{% url 'calc_app:category_items' year category.id %}">{{ category.name }}</a></li>
                 {% endfor %}
             </ul>
         </div>
@@ -70,7 +70,7 @@
             </button>
             <ul class="dropdown-menu">
                 {% for number, month in months.items %}
-                    <li><a href="{% url 'month_detail' number %}">{{ month }}</a></li>
+                    <li><a href="{% url 'calc_app:month_detail' year number %}">{{ month }}</a></li>
                 {% endfor %}
             </ul>
         </div>

@@ -8,6 +8,18 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["127.0.0.1"]
 
+MY_APPS = [
+    "calc_app.apps.CalcAppConfig",
+    "year_selection.apps.YearSelectionConfig",
+]
+
+THIRD_PARTY_APPS = [
+    "crispy_forms",
+    "debug_toolbar",
+    "rest_framework",
+    "tempus_dominus",
+]
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -15,11 +27,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "calc_app.apps.CalcAppConfig",
-    "crispy_forms",
-    "debug_toolbar",
-    "rest_framework",
-    "tempus_dominus",
+    *MY_APPS,
+    *THIRD_PARTY_APPS,
 ]
 
 MIDDLEWARE = [

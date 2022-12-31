@@ -23,7 +23,7 @@
         <div class="col">
             <h1>Categories</h1>
             {% for category in categories %}
-                <a class="categories" href="{% url 'category_items' category.id %}">{{ category.name }}</a>
+                <a class="categories" href="{% url 'calc_app:category_items' year category.id %}">{{ category.name }}</a>
                 <hr>
             {% endfor %}
         </div>
@@ -51,7 +51,7 @@
             <h2 class="month">Month's statistics</h2>
             <ul>
                 {% for month in months.items %}
-                    <li><a href="{% url 'month_detail' month.0 %}">{{month.1}}</a></li>
+                    <li><a href="{% url 'calc_app:month_detail' year month.0 %}">{{month.1}}</a></li>
                 {% endfor %}
             </ul>
             
