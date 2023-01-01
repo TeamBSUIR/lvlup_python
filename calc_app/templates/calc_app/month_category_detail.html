@@ -8,6 +8,9 @@
 </head>
 <body>
 {% block content %}
+    <form action="{% url "calc_app:category_items" year pk %}">
+        <button type="submit" class="btn btn-primary">Back to category</button>
+    </form>
     <link rel="stylesheet" href="{% static 'calc_app/css/month_category_style.css' %}">
     <div class="container">
         <h2>Total money sum for {{ month_name }}: {{ total_sum }}</h2>

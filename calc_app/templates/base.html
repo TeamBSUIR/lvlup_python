@@ -14,18 +14,18 @@
     <title>{% block title %}{% endblock title %}</title>
     {% block head %}
     {% endblock %}
-        {# Include FontAwesome; required for icon display #}
-        <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css">
+    {# Include FontAwesome; required for icon display #}
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.css">
 
-        {# Include Bootstrap 4 and jQuery #}
+    {# Include Bootstrap 4 and jQuery #}
     {#    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"#}
     {#          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">#}
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-                integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-                crossorigin="anonymous"></script>
-    
-        {# Django Tempus Dominus assets are included in `{{ form.media }}` #}
-        {{ form.media }}
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+
+    {# Django Tempus Dominus assets are included in `{{ form.media }}` #}
+    {{ form.media }}
 </head>
 <body>
 
@@ -39,14 +39,23 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'calc_app:category_list' year %}">Home</a>
+                    <a class="nav-link active" aria-current="page"
+                       href="{% url 'calc_app:category_list' year %}">Category list</a>
                 </li>
             </ul>
         </div>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{% url 'calc_app:create_item' year %}">Create New Item</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'calc_app:create_item' year %}">Create
+                        New Expense</a>
+                </li>
+            </ul>
+        </div>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{% url 'year_selection:year_selection_view' %}">Select the year</a>
                 </li>
             </ul>
         </div>
@@ -54,7 +63,7 @@
         <div class="dropdown">
             <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
                     aria-expanded="false">
-                New categories and purchases
+                More about categories
             </button>
             <ul class="dropdown-menu">
                 {% for category in categories %}

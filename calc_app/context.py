@@ -62,4 +62,5 @@ def get_category_items_view_context(pk, year):
         "form": form,
         "categories": categories,
         "months": months,
+        "year": year,
     }

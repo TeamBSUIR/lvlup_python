@@ -67,6 +67,7 @@ class SortByCategoryAndMonthView(TemplateView):
             .order_by("date")
         )
         context["year"] = self.kwargs["year"]
+        context["pk"] = self.kwargs["category_id"]
         return context | get_global_context(items, kwargs["month"])
 
 
@@ -133,7 +134,6 @@ class CategoryItemsView(ListView):
         custom_context = get_category_items_view_context(
             self.kwargs["pk"], self.kwargs["year"]
         )
-        context["year"] = self.kwargs["year"]
         return context | custom_context
 
     def post(self, request, year, pk):
