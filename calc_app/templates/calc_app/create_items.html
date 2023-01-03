@@ -1,11 +1,26 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{%block content%}
+{% block content %}
     <div class="container">
         <form method="post">
             {% csrf_token %}
-            {{ form.as_p }}
+            <p>
+                {{ form.category.label_tag }}
+                {{ form.category }}
+            </p>
+            <p>
+                {{ form.date.label_tag }}
+                {{ form.date }}
+            </p>
+            <p>
+                {{ form.cost.label_tag }}
+                {{ form.cost }}
+            </p>
+{#            <p>#}
+{#                {{ form.user.label_tag }}#}
+{#                {{ form.user }}#}
+{#            </p>#}
             <button class="btn btn-primary">Create new</button>
         </form>
     </div>

@@ -1,6 +1,7 @@
 import base64
 from io import BytesIO
 import matplotlib.pyplot as plt
+from functools import lru_cache
 
 
 def get_months_numbs_and_names():
@@ -43,6 +44,7 @@ def get_graph():
     return graph
 
 
+@lru_cache(maxsize=7)
 def parallel_sort(first, second):
     """
     Sorts two connected lists(tuples)
@@ -57,7 +59,8 @@ def parallel_sort(first, second):
     return first, second
 
 
-def get_plot(sizes, labels):
+@lru_cache(maxsize=7)
+def get_plot(labels, sizes):
     """
     returns built plot
     """

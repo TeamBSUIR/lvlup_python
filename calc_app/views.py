@@ -1,7 +1,11 @@
 # Third party imports
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView, ListView, View
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.utils import ProgrammingError
 
 # Local application imports
 import calc_app.models as models
@@ -14,14 +18,19 @@ from calc_app.context import (
 )
 
 
-class ItemCreateView(TemplateView):
+class ItemCreateView(LoginRequiredMixin, TemplateView):
     template_name = "calc_app/create_items.html"
 
     def post(self, request, year):
         context = {}
         form = forms.ExpenseItemModelForm(request.POST)
         if form.is_valid():  # simple form validation
-            form.save()
+            models.ExpenseItem.objects.create(
+                cost=request.POST["cost"],
+                date=request.POST["date"],
+                category=models.Category.objects.get(id=int(request.POST["category"])),
+                user=request.user,
+            )
         else:
             context["form"] = form
             render(
@@ -30,21 +39,23 @@ class ItemCreateView(TemplateView):
         return redirect(reverse("calc_app:category_list", kwargs={"year": year}))
 
     def get_context_data(self, **kwargs):
+        form = forms.ExpenseItemModelForm()
         context = super().get_context_data(**kwargs)
         context["categories"] = models.Category.objects.order_by("name")
         context["months"] = get_months_numbs_and_names()
-        context["form"] = forms.ExpenseItemModelForm()
+        context["form"] = form
         context["year"] = self.kwargs["year"]
         return context
 
 
-class SortByMonthView(TemplateView):
+class SortByMonthView(LoginRequiredMixin, TemplateView):
     template_name = "calc_app/month_detail.html"
 
     def get_context_data(self, **kwargs):
         context = super(SortByMonthView, self).get_context_data(**kwargs)
         items = (
             models.ExpenseItem.objects.select_related("category")
+            .filter(user_id=self.request.user.id)
             .filter(date__year=self.kwargs["year"])
             .filter(date__month=kwargs["month"])
             .order_by("category__name")
@@ -53,7 +64,7 @@ class SortByMonthView(TemplateView):
         return context | get_global_context(items, kwargs["month"])
 
 
-class SortByCategoryAndMonthView(TemplateView):
+class SortByCategoryAndMonthView(LoginRequiredMixin, TemplateView):
     template_name = "calc_app/month_category_detail.html"
 
     def get_context_data(self, **kwargs):
@@ -71,7 +82,7 @@ class SortByCategoryAndMonthView(TemplateView):
         return context | get_global_context(items, kwargs["month"])
 
 
-class CategoryListView(ListView):
+class CategoryListView(LoginRequiredMixin, ListView):
     """
     features:
     - we don't use object_list context variable in the template
@@ -85,18 +96,10 @@ class CategoryListView(ListView):
     model = models.Category
     template_name = "calc_app/category_list.html"
 
-    def get_custom_queryset(self, year):
-        return set(
-            [
-                item.category
-                for item in models.ExpenseItem.objects.filter(date__year=year)
-            ]
-        )
-
     def get_context_data(self, **kwargs):
         context = super(CategoryListView, self).get_context_data(**kwargs)
         custom_context_variables = get_category_list_view_context(
-            self.get_custom_queryset(self.kwargs["year"]), self.kwargs["year"]
+            self.kwargs["year"], self.request.user
         )
         return context | custom_context_variables
 
@@ -108,18 +111,17 @@ class CategoryListView(ListView):
             return render(
                 request,
                 self.template_name,
-                get_category_list_view_context(self.get_custom_queryset(year), year)
-                | {"form": form},
+                get_category_list_view_context(year, request.user) | {"form": form},
             )
         return render(
             request,
             self.template_name,
-            get_category_list_view_context(self.get_custom_queryset(year), year),
+            get_category_list_view_context(year, request.user),
         )
 
 
-class CategoryItemsView(ListView):
-    """
+class CategoryItemsView(LoginRequiredMixin, ListView):
+    """=
     features:
     - if you want to use <object_list> you'll override
     <get_queryset> method. In our case <items> context
@@ -132,20 +134,58 @@ class CategoryItemsView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super(CategoryItemsView, self).get_context_data(**kwargs)
         custom_context = get_category_items_view_context(
-            self.kwargs["pk"], self.kwargs["year"]
+            self.kwargs["pk"], self.kwargs["year"], self.request.user
         )
         return context | custom_context
 
     def post(self, request, year, pk):
         form = forms.ExpenseItemModelForm(request.POST)
         if form.is_valid():
-            form.save()
+            models.ExpenseItem.objects.create(
+                cost=request.POST["cost"],
+                date=request.POST["date"],
+                user=request.user,
+                category=models.Category.objects.get(id=int(request.POST["category"])),
+            )
         else:
             return render(
                 request,
                 self.template_name,
-                get_category_items_view_context(pk, year) | {"form": form},
+                get_category_items_view_context(pk, year, request.user)
+                | {"form": form},
             )
         return render(
-            request, self.template_name, get_category_items_view_context(pk, year)
+            request,
+            self.template_name,
+            get_category_items_view_context(pk, year, request.user),
         )
+
+
+class Register(View):  # for user's authentication
+    template_name = "registration/register.html"
+
+    def get(self, request):
+        context = {  # send user creation form to the template
+            "form": UserCreationForm,
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        form = UserCreationForm(request.POST)
+        if (
+            form.is_valid()
+        ):  # if form is valid we create an instance of user and authenticate him to our app
+            form.save()
+            username = form.cleaned_data["username"]
+            password = form.cleaned_data["password1"]
+            user = authenticate(username=username, password=password)
+            login(request, user)
+            return redirect(
+                "login"
+            )  # then redirect him back to the home view(with changes styles)
+        context = {
+            "form": form,
+        }
+        return render(
+            request, self.template_name, context
+        )  # returning form with invalid info

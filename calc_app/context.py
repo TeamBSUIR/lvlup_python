@@ -2,18 +2,23 @@ from calc_app.models import Category
 from calc_app.utils import get_months_numbs_and_names
 from calc_app import utils, forms
 from calc_app import models
+from django.db.models import Q
 
 
-def get_categories_costs(names, year):  # improved
+def get_categories_costs(year, user):  # improved
     """
     calculates the purchases cost per category
     """
-    name_dict = {name: 0 for name in names}
-    for item in models.ExpenseItem.objects.filter(date__year=year).select_related(
-        "category"
-    ):
-        name_dict[item.category.name] += item.cost
-    return list(name_dict.values())
+    dictionary = {}
+    queryset = models.ExpenseItem.objects.filter(
+        Q(user=user) & Q(date__year=year)
+    ).select_related("category")
+    for expense in queryset:
+        if expense.category.name not in dictionary.keys():
+            dictionary[expense.category.name] = expense.cost
+        else:
+            dictionary[expense.category.name] += expense.cost
+    return tuple(dictionary.keys()), tuple(dictionary.values())
 
 
 def get_global_context(items, month):
@@ -36,20 +41,23 @@ def get_global_context(items, month):
     }
 
 
-def get_category_list_view_context(queryset, year):  # improved
-    names = tuple([category.name for category in queryset])
+def get_category_list_view_context(year, user):  # improved
+    # use set before tuple because there can be some
+    # dublications
     return {
         "form": forms.CategoryModelForm(),
         "months": utils.get_months_numbs_and_names(),
-        "categories": queryset,
-        "chart": utils.get_plot(get_categories_costs(names, year), names),
+        "categories": models.Category.objects.order_by("name"),
+        "chart": utils.get_plot(*get_categories_costs(year, user)),
         "year": year,
     }
 
 
-def get_category_items_view_context(pk, year):
+def get_category_items_view_context(pk, year, user):
     categories = models.Category.objects.order_by("name")
-    items = models.ExpenseItem.objects.filter(category_id=pk).filter(date__year=year)
+    items = models.ExpenseItem.objects.filter(
+        Q(category_id=pk) & Q(date__year=year) & Q(user_id=user.id)
+    )
     category = models.Category.objects.get(pk=pk)
     months = utils.get_months_numbs_and_names()
     category_months = {item.date.month: months[item.date.month] for item in items}

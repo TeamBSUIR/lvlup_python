@@ -1,5 +1,6 @@
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Category(models.Model):
@@ -13,7 +14,7 @@ class Category(models.Model):
 
 
 class ExpenseItem(models.Model):
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
     cost = models.DecimalField(
         max_digits=10, decimal_places=2, validators=[MinValueValidator(0)]
