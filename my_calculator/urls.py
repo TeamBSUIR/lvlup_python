@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
-from calc_app.views import Register
+from calc_app.views import RegisterView
 
 
 urlpatterns = [
@@ -11,7 +11,7 @@ urlpatterns = [
         "year/", include("calc_app.urls")
     ),  # need to rewrite login in the views to add year logic
     path("accounts/", include("django.contrib.auth.urls")),
-    path("accounts/register", Register.as_view(), name="register"),
+    path("accounts/register", RegisterView.as_view(), name="register"),
 ]
 
 if settings.DEBUG:

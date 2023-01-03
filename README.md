@@ -1,4 +1,19 @@
-## The Budget Calculator project ##
+# The Budget Calculator project ##
+
+## Already done
+
+- Created application that provides you with opportunity of managing your budget
+- The statistic is divided on years. Under the year layer you can get the statistic per month or per category of expense
+- Under the year layer you can get the visual interpretation of your budget statistic in the form of pie
+- Showing the statistic only for authorized users
+
+## Used technologies
+
+- Python, Django
+- PostgreSQL
+- Docker
+- HTML, CSS, Bootstrap 5
+- Poetry, Matplotlib
 
 ## How to install
     $ git clone https://github.com/PashaDem/BudgetCalculator.git

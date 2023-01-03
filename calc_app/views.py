@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.generic import TemplateView, ListView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.utils import ProgrammingError
+from django.db.models import Q
 
 # Local application imports
 import calc_app.models as models
@@ -55,9 +55,11 @@ class SortByMonthView(LoginRequiredMixin, TemplateView):
         context = super(SortByMonthView, self).get_context_data(**kwargs)
         items = (
             models.ExpenseItem.objects.select_related("category")
-            .filter(user_id=self.request.user.id)
-            .filter(date__year=self.kwargs["year"])
-            .filter(date__month=kwargs["month"])
+            .fitler(
+                Q(user_id=self.request.user.id)
+                & Q(date__year=self.kwargs["year"])
+                & Q(date__month=kwargs["month"])
+            )
             .order_by("category__name")
         )
         context["year"] = self.kwargs["year"]
@@ -73,8 +75,7 @@ class SortByCategoryAndMonthView(LoginRequiredMixin, TemplateView):
             models.ExpenseItem.objects.filter(
                 category_id=kwargs["category_id"]
             )  # grouping items by the category and the month
-            .filter(date__year=self.kwargs["year"])
-            .filter(date__month=kwargs["month"])
+            .filter(Q(date__year=self.kwargs["year"]) & Q(date__month=kwargs["month"]))
             .order_by("date")
         )
         context["year"] = self.kwargs["year"]
@@ -161,31 +162,25 @@ class CategoryItemsView(LoginRequiredMixin, ListView):
         )
 
 
-class Register(View):  # for user's authentication
+class RegisterView(View):
     template_name = "registration/register.html"
 
     def get(self, request):
-        context = {  # send user creation form to the template
+        context = {
             "form": UserCreationForm,
         }
         return render(request, self.template_name, context)
 
     def post(self, request):
         form = UserCreationForm(request.POST)
-        if (
-            form.is_valid()
-        ):  # if form is valid we create an instance of user and authenticate him to our app
+        if form.is_valid():
             form.save()
             username = form.cleaned_data["username"]
             password = form.cleaned_data["password1"]
             user = authenticate(username=username, password=password)
             login(request, user)
-            return redirect(
-                "login"
-            )  # then redirect him back to the home view(with changes styles)
+            return redirect("login")
         context = {
             "form": form,
         }
-        return render(
-            request, self.template_name, context
-        )  # returning form with invalid info
+        return render(request, self.template_name, context)
