@@ -12,7 +12,7 @@
 - Python, Django
 - PostgreSQL
 - Docker
-- HTML, CSS, Bootstrap 5
+- HTML, CSS, Bootstrap
 - Poetry, Matplotlib
 
 ## How to install

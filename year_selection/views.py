@@ -22,6 +22,8 @@ class YearSelectionView(LoginRequiredMixin, TemplateView):
 
     def post(self, request):
         form = YearAddingForm(request.POST)
-        if form.is_valid():
+        if (
+            form.is_valid()
+        ):  # there is no custom validation, so the main idea of calling <is_valid> is to clean the data
             d = form.cleaned_data["date"]
-        return redirect(reverse("calc_app:category_list", kwargs={"year": d.year}))
+            return redirect(reverse("calc_app:category_list", kwargs={"year": d.year}))

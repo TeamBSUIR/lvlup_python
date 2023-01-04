@@ -64,7 +64,8 @@ def get_plot(labels, sizes):
     """
     returns built plot
     """
-    if sizes is None:
+
+    if not sizes:
         return None
     else:
 
