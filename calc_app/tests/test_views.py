@@ -1,64 +1,47 @@
-import datetime
+# local imports
+from calc_app.models import Category, ExpenseItem
 
-from django.core.exceptions import ValidationError
+# third-party imports
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
-from calc_app.models import Category, ExpenseItem
 from datetime import date
 from django.db.models import Q
 
 
-class TestYearSelectionView(TestCase):
+class TestItemCreateView(TestCase):
     @classmethod
     def setUpTestData(cls):
         user1 = User.objects.create_user(username="first_user", password="12345")
         user1.save()
-        category1 = Category.objects.create(name="first_category")
-        expense1 = ExpenseItem.objects.create(
-            cost=100, date=date(2015, 9, 11), user=user1, category=category1
+        Category.objects.create(name="first_category")
+
+    def test_redirection_if_user_is_not_logged_in(self):
+        resp = self.client.get(reverse("calc_app:create_item", args=[2022]))
+        self.assertRedirects(
+            resp, "/accounts/login/?next=/year/2022/expense/create_new/"
         )
-        expense2 = ExpenseItem.objects.create(
-            cost=100, date=date(2012, 8, 14), user=user1, category=category1
-        )
 
-    def test_year_redirect_if_not_logged_in(self):
-        resp = self.client.get(reverse("year_selection:year_selection_view"))
-        self.assertRedirects(resp, "/accounts/login/?next=/")
-
-    def test_year_list(self):
-        self.client.login(username="first_user", password="12345")
-        resp = self.client.get(reverse("year_selection:year_selection_view"))
-        self.assertEqual(resp.status_code, 200)
-        self.assertSetEqual(resp.context["years"], set([2015, 2012]))
-
-    def test_empty_year_list(self):
-        user = User.objects.get(username="first_user")
-        ExpenseItem.objects.filter(user_id=user.id).delete()
-        self.client.login(username="first_user", password="12345")
-        resp = self.client.get(reverse("year_selection:year_selection_view"))
-        self.assertEqual(resp.context["years"], set())
-
-    def test_redirection_after_post(self):
+    def test_valid_post_request(self):
+        category = Category.objects.all()[0]
         self.client.login(username="first_user", password="12345")
         resp = self.client.post(
-            reverse("year_selection:year_selection_view"),
-            data={"date": [str(date(2005, 12, 11))]},
+            reverse("calc_app:create_item", args=[2022]),
+            data={
+                "cost": "123",
+                "category": f"{category.pk}",
+                "date": str(date(2022, 11, 16)),
+            },
         )
-        self.assertRedirects(resp, "/year/2005/")
-        self.assertEqual(resp.status_code, 302)
+        self.assertRedirects(resp, reverse("calc_app:category_list", args=[2022]))
 
-    def test_wrong_data_in_post(self):
+    def test_invalid_post_request(self):
         self.client.login(username="first_user", password="12345")
-        try:
-            self.client.post(
-                reverse("year_selection:year_selection_view"),
-                data={"date": [str(date(2005, 13, 11))]},
+        with self.assertRaises(ValueError):
+            resp = self.client.post(
+                reverse("calc_app:create_item", args=[2022]),
+                data={"cost": "123", "category": "0", "date": str(date(2022, 13, 16))},
             )
-        except ValueError:
-            self.assertTrue(True)
-        else:
-            self.assertFalse(True)
 
 
 class TestCategoryListView(TestCase):
@@ -108,6 +91,19 @@ class TestCategoryListView(TestCase):
             self.assertTrue(True)
         except Category.DoesNotExist:
             self.assertTrue(False)
+
+    def test_post_invalid_request(self):
+        self.client.login(username="first_user", password="12345")
+        resp = self.client.post(
+            reverse("calc_app:category_list", kwargs={"year": 2012}),
+            data={"name": ["   "]},
+        )
+        self.assertEqual(resp.status_code, 200)
+        try:
+            Category.objects.get(name="   ")
+            self.assertTrue(False)
+        except Category.DoesNotExist:
+            self.assertTrue(True)
 
 
 class TestCategoryItemsView(TestCase):
@@ -189,3 +185,78 @@ class TestCategoryItemsView(TestCase):
             self.assertTrue(False)
         else:
             self.assertTrue(True)
+
+
+class TestSortByCategoryAndMonthView(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        user1 = User.objects.create_user(username="first_user", password="12345")
+
+        first_category = Category.objects.create(name="first category")
+        second_category = Category.objects.create(name="second category")
+
+        ExpenseItem.objects.create(
+            cost=120, category=first_category, date=date(2022, 12, 11), user=user1
+        )
+        ExpenseItem.objects.create(
+            cost=120, category=first_category, date=date(2022, 10, 11), user=user1
+        )
+        ExpenseItem.objects.create(
+            cost=120, category=second_category, date=date(2022, 12, 11), user=user1
+        )
+        ExpenseItem.objects.create(
+            cost=120, category=second_category, date=date(2022, 12, 11), user=user1
+        )
+
+    def test_redirection_if_not_logged_in(self):
+        resp = self.client.get(reverse("calc_app:month_statistics", args=[2022, 12, 1]))
+        self.assertRedirects(resp, "/accounts/login/?next=/year/2022/category/12/1")
+
+    def test_response_status_code_if_authenticated(self):
+        self.client.login(username="first_user", password="12345")
+        resp = self.client.get(reverse("calc_app:month_statistics", args=[2022, 12, 1]))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_item_list(self):
+        category_pk = Category.objects.get(name="first category").pk
+        self.client.login(username="first_user", password="12345")
+        resp = self.client.get(
+            reverse("calc_app:month_statistics", args=[2022, 12, category_pk])
+        )
+        self.assertEqual(len(resp.context["items"]), 1)
+
+
+class TestSortByMonthView(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        user1 = User.objects.create_user(username="first_user", password="12345")
+
+        first_category = Category.objects.create(name="first category")
+        second_category = Category.objects.create(name="second category")
+
+        ExpenseItem.objects.create(
+            cost=120, category=first_category, date=date(2022, 1, 5), user=user1
+        )
+        ExpenseItem.objects.create(
+            cost=120, category=first_category, date=date(2022, 1, 17), user=user1
+        )
+        ExpenseItem.objects.create(
+            cost=120, category=second_category, date=date(2022, 1, 11), user=user1
+        )
+        ExpenseItem.objects.create(
+            cost=120, category=second_category, date=date(2022, 12, 28), user=user1
+        )
+
+    def test_redirection_if_not_logged_in(self):
+        resp = self.client.get(reverse("calc_app:month_detail", args=[2022, 12]))
+        self.assertRedirects(resp, "/accounts/login/?next=/year/2022/month/12")
+
+    def test_response_status_code_if_authenticated(self):
+        self.client.login(username="first_user", password="12345")
+        resp = self.client.get(reverse("calc_app:month_detail", args=[2022, 12]))
+        self.assertEqual(resp.status_code, 200)
+
+    def test_items_list(self):
+        self.client.login(username="first_user", password="12345")
+        resp = self.client.get(reverse("calc_app:month_detail", args=[2022, 1]))
+        self.assertEqual(len(resp.context["items"]), 3)

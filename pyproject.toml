@@ -15,6 +15,7 @@ django-crispy-forms = "^1.14.0"
 django-tempus-dominus = "^5.1.2.17"
 psycopg2-binary = "^2.9.5"
 pytest-django = "^4.5.2"
+coverage = "^7.0.3"
 
 
 [build-system]

@@ -1,10 +1,13 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
+from calc_app.validators import category_name_validator
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=25, unique=True)
+    name = models.CharField(
+        max_length=25, unique=True, validators=[category_name_validator]
+    )
 
     class Meta:
         verbose_name_plural = "Categories"

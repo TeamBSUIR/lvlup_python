@@ -54,13 +54,13 @@ class SortByMonthView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super(SortByMonthView, self).get_context_data(**kwargs)
         items = (
-            models.ExpenseItem.objects.select_related("category")
-            .fitler(
+            models.ExpenseItem.objects.filter(
                 Q(user_id=self.request.user.id)
                 & Q(date__year=self.kwargs["year"])
                 & Q(date__month=kwargs["month"])
             )
             .order_by("category__name")
+            .select_related("category")
         )
         context["year"] = self.kwargs["year"]
         return context | get_global_context(items, kwargs["month"])
@@ -75,7 +75,11 @@ class SortByCategoryAndMonthView(LoginRequiredMixin, TemplateView):
             models.ExpenseItem.objects.filter(
                 category_id=kwargs["category_id"]
             )  # grouping items by the category and the month
-            .filter(Q(date__year=self.kwargs["year"]) & Q(date__month=kwargs["month"]))
+            .filter(
+                Q(date__year=self.kwargs["year"])
+                & Q(date__month=kwargs["month"])
+                & Q(user_id=self.request.user.id)
+            )
             .order_by("date")
         )
         context["year"] = self.kwargs["year"]

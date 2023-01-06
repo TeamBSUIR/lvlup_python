@@ -22,7 +22,7 @@ urlpatterns = [
         name="month_statistics",
     ),
     path(
-        "<int:year>/category/month/<int:month>",
+        "<int:year>/month/<int:month>",
         SortByMonthView.as_view(),
         name="month_detail",
     ),
